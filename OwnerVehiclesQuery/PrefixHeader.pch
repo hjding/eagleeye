@@ -1,0 +1,30 @@
+//
+//  PrefixHeader.pch
+//  OwnerVehiclesQuery
+//
+//  Created by Ding on 15-2-4.
+//  Copyright (c) 2015年 hjd. All rights reserved.
+//
+
+#ifdef __OBJC__
+
+    #import "UIViewExt.h"
+    #import "Color.h"
+    #import "Helper.h"   
+
+#endif
+
+#define IOS7_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending )
+#define IOS8_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"8.0"] != NSOrderedAscending)
+
+#define kDeviceWidth    [UIScreen mainScreen].bounds.size.width
+#define kDeviceHeight   [UIScreen mainScreen].bounds.size.height
+
+#define kNavigationBarHeight    44
+#define kTopStatusBarHeight     20
+#define kSearchBarHeight        44
+#define kSearchBarHeight        44
+
+#define kAppHomePath    NSHomeDirectory()
+#define kTempPath       NSTemporaryDirectory()
+#define kDocumentPath   [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
