@@ -14,17 +14,38 @@
 
 #endif
 
-#define IOS7_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending )
-#define IOS8_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"8.0"] != NSOrderedAscending)
+//iOS
+#define IOS7_OR_LATER           ([[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending)
+#define IOS8_OR_LATER           ([[[UIDevice currentDevice] systemVersion] compare:@"8.0"] != NSOrderedAscending)
+//Device
+#define kDeviceSize             [UIScreen mainScreen].bounds.size
+#define kDeviceWidth            kDeviceSize.width
+#define kDeviceHeight           kDeviceSize.height
 
-#define kDeviceWidth    [UIScreen mainScreen].bounds.size.width
-#define kDeviceHeight   [UIScreen mainScreen].bounds.size.height
+//Height Standard
+#define kNavigationBarHeight    44.f
+#define kTopStatusBarHeight     20.f
+#define kSearchBarHeight        44.f
+#define kSearchBarHeight        44.f
 
-#define kNavigationBarHeight    44
-#define kTopStatusBarHeight     20
-#define kSearchBarHeight        44
-#define kSearchBarHeight        44
+//App Path
+#define kAppHomePath            NSHomeDirectory()
+#define kTempPath               NSTemporaryDirectory()
+#define kDocumentPath           [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
 
-#define kAppHomePath    NSHomeDirectory()
-#define kTempPath       NSTemporaryDirectory()
-#define kDocumentPath   [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]
+//LocalDatabase
+#define kLocalDatabaseName      @"db.sqlite"
+#define kLocalDatabasePath      [kDocumentPath stringByAppendingPathComponent:kLocalDatabaseName]
+
+//Network Mode
+#define kOffLineMode            @"离线模式"
+#define kRealTimeMode           @"实时模式"
+
+//AVOS Key
+#define AVOSAppID               @"b2ckl4neym60budueeuof7udiwaaz8yfuwyqkoqbvv7g21bx"
+#define AVOSAppKey              @"52wqietl8uiehvmfyxockvfcgdnqi3xp18cs2gz02cfl5t2b"
+#define AVOSMasterKey           @"zakz1rl7yf81fcmxivztjbmrnt9cl5gdl9yugsyllu84b4qa"
+
+//
+#define kIPhoneSimulator        @"iPhone Simulator"
+

@@ -22,6 +22,7 @@
 		2472371F1A81E9E200FC4FD5 /* OwnerVehiclesQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2472371E1A81E9E200FC4FD5 /* OwnerVehiclesQueryTests.m */; };
 		2486A0891A820DD2009D1936 /* UIViewExt.m in Sources */ = {isa = PBXBuildFile; fileRef = 2486A0881A820DD2009D1936 /* UIViewExt.m */; };
 		2486A08E1A822182009D1936 /* Helper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2486A08D1A822182009D1936 /* Helper.m */; };
+		24AFB29B1AE0A9B9007F9182 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 24AFB29A1AE0A9B9007F9182 /* Reachability.m */; };
 		24C4C4461A8466D200CA58A2 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 24C4C4451A8466D200CA58A2 /* libsqlite3.dylib */; };
 		24C712A31A899D1300D72201 /* PullRefreshTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 24C712A21A899D1300D72201 /* PullRefreshTableView.m */; };
 		24C775B71ADCB14F00DC47D6 /* AVOSCloud.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24C775B61ADCB14F00DC47D6 /* AVOSCloud.framework */; };
@@ -318,6 +319,8 @@
 		2486A08B1A821D2C009D1936 /* Color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Color.h; sourceTree = "<group>"; };
 		2486A08C1A822182009D1936 /* Helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Helper.h; sourceTree = "<group>"; };
 		2486A08D1A822182009D1936 /* Helper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Helper.m; sourceTree = "<group>"; };
+		24AFB2991AE0A9B9007F9182 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		24AFB29A1AE0A9B9007F9182 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		24C4C4451A8466D200CA58A2 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		24C712A11A899D1300D72201 /* PullRefreshTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PullRefreshTableView.h; sourceTree = "<group>"; };
 		24C712A21A899D1300D72201 /* PullRefreshTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PullRefreshTableView.m; sourceTree = "<group>"; };
@@ -589,11 +592,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2453DBCD1ADCB35900CC1103 /* SystemConfiguration.framework in Frameworks */,
 				2453DBD51ADCB38200CC1103 /* libicucore.dylib in Frameworks */,
 				2453DBD31ADCB37600CC1103 /* CoreLocation.framework in Frameworks */,
 				2453DBD11ADCB36E00CC1103 /* CoreTelephony.framework in Frameworks */,
 				2453DBCF1ADCB36400CC1103 /* MobileCoreServices.framework in Frameworks */,
-				2453DBCD1ADCB35900CC1103 /* SystemConfiguration.framework in Frameworks */,
 				24C775B71ADCB14F00DC47D6 /* AVOSCloud.framework in Frameworks */,
 				24C4C4461A8466D200CA58A2 /* libsqlite3.dylib in Frameworks */,
 			);
@@ -631,6 +634,7 @@
 		247237011A81E9E200FC4FD5 /* OwnerVehiclesQuery */ = {
 			isa = PBXGroup;
 			children = (
+				24AFB29D1AE0A9DC007F9182 /* Network */,
 				24C4C4441A84668C00CA58A2 /* Fmdb */,
 				24C4C4341A84661500CA58A2 /* Source */,
 				2472370F1A81E9E200FC4FD5 /* Images.xcassets */,
@@ -670,6 +674,15 @@
 				2472371D1A81E9E200FC4FD5 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		24AFB29D1AE0A9DC007F9182 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				24AFB2991AE0A9B9007F9182 /* Reachability.h */,
+				24AFB29A1AE0A9B9007F9182 /* Reachability.m */,
+			);
+			name = Network;
 			sourceTree = "<group>";
 		};
 		24C4C4341A84661500CA58A2 /* Source */ = {
@@ -1353,6 +1366,7 @@
 				247237051A81E9E200FC4FD5 /* main.m in Sources */,
 				24D57CBB1A848B2600492527 /* FMResultSet.m in Sources */,
 				2486A08E1A822182009D1936 /* Helper.m in Sources */,
+				24AFB29B1AE0A9B9007F9182 /* Reachability.m in Sources */,
 				24D57CB81A848B2600492527 /* FMDatabaseAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

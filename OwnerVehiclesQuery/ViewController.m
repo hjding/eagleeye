@@ -9,13 +9,17 @@
 #import "ViewController.h"
 #import "FMDatabase.h"
 #import "PullRefreshTableView.h"
+#import <AVOSCloud/AVOSCloud.h>
+#import "Reachability.h"
 
 #define kFontSize               14.0f
 #define kCellHeight             48.0f
 
 @interface ViewController ()<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,PullRefreshTableViewDelegate>
 {
-    PullRefreshTableView *pullRefreshTableView;
+    PullRefreshTableView    *pullRefreshTableView;
+    
+    BOOL                    isOffLine;
 }
 
 //数据
@@ -32,18 +36,18 @@
 
 @implementation ViewController
 
-#pragma mark -
-#pragma mark -Init Method
+#pragma mark - Init Method
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
     self=[super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if(self){
         self.title=@"车辆查询";
+        
+        self.tableData=[[NSMutableArray alloc] init];
     }
     return self;
 }
 
-#pragma mark -
-#pragma mark -LifeCycle Method
+#pragma mark - LifeCycle Method
 -(void)loadView{
 //    self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight-kTopStatusBarHeight-kNavigationBarHeight)];
     self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight)];
@@ -54,9 +58,50 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    [self judgeNetwrok];
     
+    [self initUI];
+    
+    if (isOffLine) {
+        [Helper showHintMessage:kOffLineMode];
+        [self initLocalData];
+        [self.tableView reloadData];
+    }
+    else{
+        [Helper showHintMessage:kRealTimeMode];
+    }
+}
 
-    self.tableView=[[UITableView alloc] initWithFrame:CGRectMake(0,0, self.view.width, self.view.height-self.searchBar.bottom) style:UITableViewStylePlain];
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - Privite Method
+
+-(void)judgeNetwrok{
+    Reachability *r = [Reachability reachabilityWithHostName:@"www.apple.com"];
+    switch ([r currentReachabilityStatus]) {
+        case NotReachable:
+            // 没有网络连接
+            NSLog(@"没有网络连接");
+            isOffLine=YES;
+            break;
+        case ReachableViaWWAN:
+            // 使用3G网络
+            NSLog(@"使用3G网络");
+            isOffLine=NO;
+            break;
+        case ReachableViaWiFi:
+            // 使用WiFi网络
+            NSLog(@"使用WiFi网络");
+            isOffLine=NO;
+            break;
+    }
+}
+
+-(void)initUI{
+    self.tableView=[[UITableView alloc] initWithFrame:CGRectMake(0,0, self.view.width, self.view.height) style:UITableViewStylePlain];
     self.tableView.dataSource=self;
     self.tableView.backgroundColor=[UIColor clearColor];
     self.tableView.delegate=self;
@@ -65,7 +110,7 @@
     
     //下拉刷新
     pullRefreshTableView=[[PullRefreshTableView alloc] initWithTableView:_tableView delegate:self];
-    [pullRefreshTableView addTableHeaderView];
+//    [pullRefreshTableView addTableHeaderView];
     
     self.searchBar = [[UISearchBar alloc] initWithFrame:CGRectMake(0, 0, self.view.width, kSearchBarHeight)];
     self.searchBar.placeholder = @"搜索(车主/车牌)";
@@ -74,7 +119,7 @@
     self.searchBar.delegate = self;
     self.searchBar.returnKeyType = UIReturnKeyDone;
     self.tableView.tableHeaderView=self.searchBar;
-//    [self.view addSubview:self.searchBar];
+    //    [self.view addSubview:self.searchBar];
     
     self.shadowView = [[UIView alloc] init];
     self.shadowView.frame =CGRectMake(self.tableView.left,self.searchBar.height, self.tableView.width, self.tableView.height-self.searchBar.height);
@@ -91,92 +136,14 @@
     self.blankView.font = [UIFont systemFontOfSize:kFontSize];
     self.blankView.alpha=0;
     [self.view addSubview:self.blankView];
-    
-    [self loadData];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-#pragma mark -
-#pragma mark -Privite Method
-
--(void)loadData{
-    //测试数据1000条
-    self.tableData=[[NSMutableArray alloc] init];
-    //本地数据库
-    NSString *dbPath = [kDocumentPath stringByAppendingPathComponent:@"db.sqlite"];
-    NSFileManager * fileManager = [NSFileManager defaultManager];
-    if([fileManager fileExistsAtPath:dbPath]==NO){
-        [self createDatabase:dbPath];
-        [self insert:dbPath];
-    }
-    else{
-        NSLog(@"数据库已存在");
-    }
-    self.tableData=[self query:dbPath];
-}
-//创建数据库
--(void)createDatabase:(NSString *)dbPath{
-    FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
-    if ([db open]){
-        //创建表
-        NSString *sql=@"CREATE TABLE 'User' ('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , 'name' VARCHAR(30), 'telephone' VARCHAR(11), 'plateNumber' VARCHAR(10))";
-        BOOL res=[db executeUpdate:sql];
-        if(!res){
-            NSLog(@"创建表失败");
-        }
-        else{
-            NSLog(@"创建表成功");
-        }
-        [db close];
-    }
-    else{
-        NSLog(@"打开数据库失败");
-    }
-}
-//插入数据
--(void)insert:(NSString *)dbPath{
-    
-    FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
-    if ([db open]) {
-        NSString *sql=@"insert into user(name,telephone,plateNumber) values(?,?,?)";
-        for (int i=0; i<10; i++) {
-            NSString *name=[NSString stringWithFormat:@"黄%i",10000+i];
-            NSString *telephone=[NSString stringWithFormat:@"%lld",15271840000+i];
-            NSString *plateNumber=[NSString stringWithFormat:@"鄂A-%i",60000+i];
-            BOOL res=[db executeUpdate:sql,name,telephone,plateNumber];
-            if(!res){
-                NSLog(@"插入数据失败");
-            }
-        }
-        [db close];
-    }
-}
-//查询数据
--(NSMutableArray *)query:(NSString *)dbPath{
-    NSMutableArray *arr_data=[[NSMutableArray alloc] init];
-    FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
-    if ([db open]) {
-        NSString *sql=@"select * from user";
-        FMResultSet *res=[db executeQuery:sql];
-        while (res.next) {
-            NSString *name=[res stringForColumn:@"name"];
-            NSString *telephone=[res stringForColumn:@"telephone"];
-            NSString *plateNumber=[res stringForColumn:@"plateNumber"];
-            NSDictionary *dic_info=@{@"name":name,@"telephone":telephone,@"plateNumber":plateNumber};
-            [arr_data addObject:dic_info];
-        }
-//        NSLog(@"%i",self.tableData.count);
-        [db close];
-    }
-    return arr_data;
+-(void)initLocalData{
+    self.tableData=[self queryLocalData];
 }
 
 -(void)searchWithChineseCharacter:(NSString *)searchText{
-    [self loadData];
+//    [self initLocalData];
     self.searchData=[[NSMutableArray alloc] init];
     //搜索
     if(searchText.length!=0){
@@ -210,8 +177,90 @@
     [self.tableView reloadData];
 }
 
-#pragma mark -
-#pragma mark -Pull Down and Up Refresh
+-(void)refreshData{
+    AVQuery *query=[AVQuery queryWithClassName:@"user"];
+    [query setLimit:10];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (objects) {
+            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [objects description]]);
+        }else{
+            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [error description]]);
+        }
+    }];
+}
+
+#pragma mark - FMDB
+//创建表
+-(void)createLocalTable{
+    
+    NSString *dbPath=kLocalDatabasePath;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if([fileManager fileExistsAtPath:dbPath]==NO){
+        //创建数据库
+        FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
+        if ([db open]){
+            //创建表
+            NSString *sql=@"CREATE TABLE 'User' ('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , 'name' VARCHAR(30), 'telephone' VARCHAR(11), 'plateNumber' VARCHAR(10))";
+            BOOL res=[db executeUpdate:sql];
+            if(!res){
+                NSLog(@"创建表失败");
+            }
+            else{
+                NSLog(@"创建表成功");
+            }
+            [db close];
+        }
+        else{
+            NSLog(@"打开数据库失败");
+        }
+    }
+    else{
+        NSLog(@"数据库已存在");
+    }
+    
+}
+
+//查询数据
+-(NSMutableArray *)queryLocalData{
+    NSString *dbPath=kLocalDatabasePath;
+    NSMutableArray *muarr_data=[[NSMutableArray alloc] init];
+    FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
+    if ([db open]) {
+        NSString *sql=@"select * from user";
+        FMResultSet *res=[db executeQuery:sql];
+        while (res.next) {
+            NSString *name=[res stringForColumn:@"name"];
+            NSString *telephone=[res stringForColumn:@"telephone"];
+            NSString *plateNumber=[res stringForColumn:@"plateNumber"];
+            NSDictionary *dic_info=@{@"name":name,@"telephone":telephone,@"plateNumber":plateNumber};
+            [muarr_data addObject:dic_info];
+        }
+        [db close];
+    }
+    return muarr_data;
+}
+
+//插入数据
+-(void)insertLocalData{
+    
+    NSString *dbPath=kLocalDatabasePath;
+    FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
+    if ([db open]) {
+        NSString *sql=@"insert into user(name,telephone,plateNumber) values(?,?,?)";
+        for (int i=0; i<10; i++) {
+            NSString *name=[NSString stringWithFormat:@"黄%i",10000+i];
+            NSString *telephone=[NSString stringWithFormat:@"%lld",15271840000+i];
+            NSString *plateNumber=[NSString stringWithFormat:@"鄂A-%i",60000+i];
+            BOOL res=[db executeUpdate:sql,name,telephone,plateNumber];
+            if(!res){
+                NSLog(@"插入数据失败");
+            }
+        }
+        [db close];
+    }
+}
+
+#pragma mark - Pull Down and Up Refresh
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
@@ -225,6 +274,9 @@
 
 -(void)beginRefresh{
     NSLog(@"正在请求数据...");
+    
+    [self refreshData];
+    
     if (pullRefreshTableView.isRefreshing){
         //结束下拉刷新
         [pullRefreshTableView finishRefresh];
@@ -235,8 +287,7 @@
 
 }
 
-#pragma mark -
-#pragma mark -TableView Method
+#pragma mark - TableView Method
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.tableData.count;
@@ -292,8 +343,7 @@
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
 
-#pragma mark -
-#pragma mark -Target Method
+#pragma mark - Target Method
 - (void)hideKeyboard
 {
     if ([self.searchBar isFirstResponder])
@@ -321,7 +371,7 @@
         NSString *telephone=dic_info[@"telephone"];
         NSString *str_deviceName=[UIDevice currentDevice].name;
         //模拟器
-        if ([str_deviceName isEqualToString:@"iPhone Simulator"]) {
+        if ([str_deviceName isEqualToString:kIPhoneSimulator]) {
             [Helper showAlertViewWithTitle:@"模拟拨打电话" andMessage:telephone];
         }
         //真机
@@ -333,8 +383,7 @@
     }
 }
 
-#pragma mark -
-#pragma mark -SearchBar Method
+#pragma mark - SearchBar Method
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
     self.shadowView.alpha = 1;
@@ -344,13 +393,79 @@
 {
     //    [self reviseDataWithSearchText:searchText];
     NSLog(@"%@",searchText);
-    [self searchWithChineseCharacter:searchText];
-    
+    if (isOffLine) {
+        [self searchWithChineseCharacter:searchText];
+    }
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
     [self hideKeyboard];
+    if (!isOffLine) {
+        NSLog(@"正在搜索数据");
+        [self queryOnlineData:searchBar.text];
+    }
+}
+
+#pragma mark - AVOS 
+-(void)queryOnlineData:(NSString *)searchText{
+    
+//    select * from GameScore where name like 'dennis%'
+//    select * from GameScore where name regexp 'dennis.*'
+    
+//    AVQuery *query=[AVQuery queryWithClassName:@"user"];
+//    [query whereKey:@"name" hasPrefix:searchText];
+//    [query whereKey:@"name" hasSuffix:searchText];
+//    [query whereKey:@"plateNumber" hasPrefix:searchText];
+//    [query whereKey:@"plateNumber" hasSuffix:searchText];
+//    [query setLimit:20];
+//    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+//        if (objects) {
+//            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [objects description]]);
+//        }else{
+//            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [error description]]);
+//        }
+//    }];
+    
+//    NSString *cql = [NSString stringWithFormat:@"select * from user where name like '%%%@%%'",searchText];
+//    NSArray *pvalues = nil;
+//    [AVQuery doCloudQueryInBackgroundWithCQL:cql pvalues:pvalues callback:^(AVCloudQueryResult *result, NSError *error) {
+//        if (!error) {
+//            // 操作成功
+//            NSArray *arr=[result results];
+//            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [arr description]]);
+//        } else {
+//            NSLog(@"%@", error);
+//        }
+//    }];
+    
+    NSString *str_query=[Helper getSplitString:searchText With:@"*"];
+    
+    AVSearchQuery *searchQuery = [AVSearchQuery searchWithQueryString:str_query];
+    searchQuery.className = @"user";
+//    searchQuery.highlights = @"field1,field2";
+    searchQuery.limit = 10;
+    searchQuery.cachePolicy = kAVCachePolicyCacheElseNetwork;
+    searchQuery.maxCacheAge = 60;
+    searchQuery.fields = @[@"name", @"plateNumber",@"telephone"];
+    [searchQuery findInBackground:^(NSArray *objects, NSError *error) {
+        if (error==nil) {
+            NSMutableArray *muarr_data=[[NSMutableArray alloc]init];
+            for (AVObject *object in objects) {
+                NSString *name = [object objectForKey:@"name"];
+                NSString *plateNumber = [object objectForKey:@"plateNumber"];
+                NSString *telephone = [object objectForKey:@"telephone"];
+                NSDictionary *dic_info=@{@"name":name,@"telephone":telephone,@"plateNumber":plateNumber};
+                [muarr_data addObject:dic_info];
+            }
+            self.tableData=muarr_data;
+            [self.tableView reloadData];
+//            self.searchBar.text=@"";
+        }
+        else{
+            NSLog(@"%@",error);
+        }
+    }];
 }
 
 @end

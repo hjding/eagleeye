@@ -81,4 +81,6 @@
 + (BOOL)isLetter:(NSString *)str;       //一个字符是不是字母
 + (BOOL)isChinese:(NSString *)str;      //一个字符是不是汉字
 
+#pragma mark - 字符串操作
++(NSString *)getSplitString:(NSString *)str With:(NSString *)c;    //用c分隔str
 @end

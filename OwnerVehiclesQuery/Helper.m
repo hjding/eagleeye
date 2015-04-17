@@ -10,11 +10,11 @@
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 
-#define IOS7_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending )
+//#define IOS7_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending )
 
 #define recourcesPath           [[NSBundle mainBundle] resourcePath]
-#define kDeviceHeight           [UIScreen mainScreen].bounds.size.height
-#define kDeviceWidth            [UIScreen mainScreen].bounds.size.width
+//#define kDeviceHeight           [UIScreen mainScreen].bounds.size.height
+//#define kDeviceWidth            [UIScreen mainScreen].bounds.size.width
 
 #define Color(r,g,b,a)          [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:(a)/1.0]
 
@@ -651,6 +651,21 @@
         tag = YES;
     
     return tag;
+}
+
++(NSString *)getSplitString:(NSString *)str With:(NSString *)c{
+    if (c==nil) {
+        c=@"";
+    }
+    NSString *str_result=@"";
+    for (int i=0; i<str.length; i++) {
+        NSString *str_origin=[str substringWithRange:NSMakeRange(i, 1)];
+        NSString *str_goal=[NSString stringWithFormat:@"%@%@",str_origin,c];
+        str_result=[str_result stringByAppendingString:str_goal];
+    }
+    str_result=[@"*" stringByAppendingString:str_result];
+    
+    return str_result;
 }
 
 @end
