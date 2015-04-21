@@ -82,5 +82,6 @@
 + (BOOL)isChinese:(NSString *)str;      //一个字符是不是汉字
 
 #pragma mark - 字符串操作
-+(NSString *)getSplitString:(NSString *)str With:(NSString *)c;    //用c分隔str
++(NSString *)getSplitString:(NSString *)str With:(NSString *)c;     //用c分隔str
++(NSString *)polishingString:(NSString *)str withChar:(NSString *)c isLeftMode:(BOOL)isLeftMode length:(int)length;//用c补齐str
 @end

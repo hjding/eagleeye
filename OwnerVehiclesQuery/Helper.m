@@ -668,4 +668,22 @@
     return str_result;
 }
 
++(NSString *)polishingString:(NSString *)str withChar:(NSString *)c isLeftMode:(BOOL)isLeftMode length:(int) length{
+    NSString *str_result=str;
+    if (c==nil) {
+        c=@"  ";
+    }
+    if (!isLeftMode) {
+        for (int i=str.length; i<length; i++) {
+            str_result=[str_result stringByAppendingString:c];
+        }
+    }
+    else{
+        for (int i=str.length; i<length; i++) {
+            str_result=[c stringByAppendingString:str_result];
+        }
+    }
+    return str_result;
+}
+
 @end

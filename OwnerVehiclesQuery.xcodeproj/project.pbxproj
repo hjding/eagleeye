@@ -15,6 +15,7 @@
 		2453DBD11ADCB36E00CC1103 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2453DBD01ADCB36E00CC1103 /* CoreTelephony.framework */; };
 		2453DBD31ADCB37600CC1103 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2453DBD21ADCB37600CC1103 /* CoreLocation.framework */; };
 		2453DBD51ADCB38200CC1103 /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2453DBD41ADCB38200CC1103 /* libicucore.dylib */; };
+		245F652D1AE5F9DD007722F9 /* MyProgress.m in Sources */ = {isa = PBXBuildFile; fileRef = 245F652C1AE5F9DD007722F9 /* MyProgress.m */; };
 		247237051A81E9E200FC4FD5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 247237041A81E9E200FC4FD5 /* main.m */; };
 		247237081A81E9E200FC4FD5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 247237071A81E9E200FC4FD5 /* AppDelegate.m */; };
 		2472370B1A81E9E200FC4FD5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2472370A1A81E9E200FC4FD5 /* ViewController.m */; };
@@ -302,6 +303,8 @@
 		2453DBD01ADCB36E00CC1103 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		2453DBD21ADCB37600CC1103 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		2453DBD41ADCB38200CC1103 /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
+		245F652B1AE5F9DD007722F9 /* MyProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyProgress.h; sourceTree = "<group>"; };
+		245F652C1AE5F9DD007722F9 /* MyProgress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyProgress.m; sourceTree = "<group>"; };
 		247236FF1A81E9E200FC4FD5 /* OwnerVehiclesQuery.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OwnerVehiclesQuery.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		247237031A81E9E200FC4FD5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		247237041A81E9E200FC4FD5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -692,6 +695,8 @@
 				2472370A1A81E9E200FC4FD5 /* ViewController.m */,
 				24C712A11A899D1300D72201 /* PullRefreshTableView.h */,
 				24C712A21A899D1300D72201 /* PullRefreshTableView.m */,
+				245F652B1AE5F9DD007722F9 /* MyProgress.h */,
+				245F652C1AE5F9DD007722F9 /* MyProgress.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -1363,6 +1368,7 @@
 				24D57CB91A848B2600492527 /* FMDatabasePool.m in Sources */,
 				24D57CBA1A848B2600492527 /* FMDatabaseQueue.m in Sources */,
 				247237081A81E9E200FC4FD5 /* AppDelegate.m in Sources */,
+				245F652D1AE5F9DD007722F9 /* MyProgress.m in Sources */,
 				247237051A81E9E200FC4FD5 /* main.m in Sources */,
 				24D57CBB1A848B2600492527 /* FMResultSet.m in Sources */,
 				2486A08E1A822182009D1936 /* Helper.m in Sources */,

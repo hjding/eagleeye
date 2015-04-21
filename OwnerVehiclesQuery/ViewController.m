@@ -11,13 +11,16 @@
 #import "PullRefreshTableView.h"
 #import <AVOSCloud/AVOSCloud.h>
 #import "Reachability.h"
+#import "MyProgress.h"
 
 #define kFontSize               14.0f
 #define kCellHeight             48.0f
+#define kBorderMargin            8.0f
 
 @interface ViewController ()<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,PullRefreshTableViewDelegate>
 {
     PullRefreshTableView    *pullRefreshTableView;
+    MyProgress              *progress;
     
     BOOL                    isOffLine;
 }
@@ -40,7 +43,7 @@
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
     self=[super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if(self){
-        self.title=@"车辆查询";
+        self.title=@"查询";
         
         self.tableData=[[NSMutableArray alloc] init];
     }
@@ -50,7 +53,7 @@
 #pragma mark - LifeCycle Method
 -(void)loadView{
 //    self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight-kTopStatusBarHeight-kNavigationBarHeight)];
-    self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight)];
+    self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight-kTopStatusBarHeight)];
     self.view.backgroundColor=kHomeBg;
     
 }
@@ -69,6 +72,7 @@
     }
     else{
         [Helper showHintMessage:kRealTimeMode];
+        [self queryOnlineAllData];
     }
 }
 
@@ -97,11 +101,16 @@
             NSLog(@"使用WiFi网络");
             isOffLine=NO;
             break;
+            
     }
 }
 
 -(void)initUI{
-    self.tableView=[[UITableView alloc] initWithFrame:CGRectMake(0,0, self.view.width, self.view.height) style:UITableViewStylePlain];
+//    UIButton *bt_right=[UIButton buttonWithType:UIButtonTypeCustom];
+//    [bt_right setTitle:@"" forState:UIControlStateNormal];
+    
+    self.tableView=[[UITableView alloc] initWithFrame:CGRectMake(0,0, self.view.width, self.view.height-kNavigationBarHeight) style:UITableViewStylePlain];
+//    NSLog(@"frame:%@",NSStringFromCGRect(self.tableView.frame));
     self.tableView.dataSource=self;
     self.tableView.backgroundColor=[UIColor clearColor];
     self.tableView.delegate=self;
@@ -177,16 +186,27 @@
     [self.tableView reloadData];
 }
 
--(void)refreshData{
-    AVQuery *query=[AVQuery queryWithClassName:@"user"];
-    [query setLimit:10];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (objects) {
-            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [objects description]]);
-        }else{
-            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [error description]]);
-        }
-    }];
+//-(void)refreshData{
+//    AVQuery *query=[AVQuery queryWithClassName:@"user"];
+//    [query setLimit:10];
+//    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+//        if (objects) {
+//            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [objects description]]);
+//        }else{
+//            NSLog(@"%@",[NSString stringWithFormat:@"查询结果: \n%@", [error description]]);
+//        }
+//    }];
+//}
+
+//边界页面
+- (void)addBlankView
+{
+    if (self.tableData.count == 0){
+        self.blankView.alpha=1.0;
+    }
+    else{
+        self.blankView.alpha=0.0;
+    }
 }
 
 #pragma mark - FMDB
@@ -260,6 +280,44 @@
     }
 }
 
+//更新本地数据表
+-(void)updateLocalData:(NSMutableArray *)muarr_data{
+//    NSMutableArray *muarr_data=[self queryOnlineAllData];
+    
+    NSString *dbPath=kLocalDatabasePath;
+    FMDatabase *db=[FMDatabase databaseWithPath:dbPath];
+    
+    if ([db open]) {
+        //清空user所有数据
+        NSString * sql_delete = @"delete from user";
+        BOOL res = [db executeUpdate:sql_delete];
+        if (!res) {
+            NSLog(@"删除所有数据错误");
+        }
+        else {
+            NSLog(@"删除所有数据成功");
+        }
+        
+        //添加新数据
+        NSString *sql=@"insert into user(name,telephone,plateNumber) values(?,?,?)";
+        for (int i=0; i<muarr_data.count; i++) {
+            NSDictionary *dic=[[NSDictionary alloc]initWithDictionary:muarr_data[i]];
+            NSString *name=dic[@"name"];
+            NSString *telephone=dic[@"telephone"];
+            NSString *plateNumber=dic[@"plateNumber"];
+            BOOL res=[db executeUpdate:sql,name,telephone,plateNumber];
+            if(!res){
+                NSLog(@"插入数据失败");
+            }
+            else{
+                NSLog(@"插入数据成功");
+            }
+        }
+        [db close];
+    }
+}
+
+
 #pragma mark - Pull Down and Up Refresh
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -275,7 +333,7 @@
 -(void)beginRefresh{
     NSLog(@"正在请求数据...");
     
-    [self refreshData];
+//    [self refreshData];
     
     if (pullRefreshTableView.isRefreshing){
         //结束下拉刷新
@@ -302,14 +360,6 @@
     //移去所有的子视图
     [cell.contentView removeAllSubviews];
     NSDictionary *dic_info=self.tableData[indexPath.row];
-    //车主&手机
-    NSString *str_name=dic_info[@"name"];
-    NSString *str_telephone=dic_info[@"telephone"];
-    NSString *str_plateNumber=dic_info[@"plateNumber"];
-    UILabel *lb_info=[[UILabel alloc] initWithFrame:CGRectMake(5, 0,self.tableView.width-5*2, cell.contentView.height)];
-    lb_info.text=[NSString stringWithFormat:@"%@(%@)            %@",str_name,str_plateNumber,str_telephone];
-    lb_info.font=[UIFont systemFontOfSize:14.0f];
-    [cell.contentView addSubview:lb_info];
     
     if (indexPath.row==0) {
         UIView *line=[[UIView alloc] initWithFrame:CGRectMake(0, 0, cell.width, 1)];
@@ -317,14 +367,34 @@
         line.alpha=0.2;
         [cell.contentView addSubview:line];
     }
-    
-    CGFloat h=25;
+    //车牌&车主&手机
+    NSString *str_name=dic_info[@"name"];
+    NSString *str_telephone=dic_info[@"telephone"];
+    NSString *str_plateNumber=dic_info[@"plateNumber"];
+    CGFloat h=25.f;
     UIButton *bt_telephone=[UIButton buttonWithType:UIButtonTypeCustom];
-    bt_telephone.frame=CGRectMake(cell.width-h-8, kCellHeight/2-h/2,h, h);
-    UIImage *image_telephone=[UIImage imageNamed:@"ic_action_phone_start"];
-    [bt_telephone setImage:image_telephone forState:UIControlStateNormal];
+    bt_telephone.frame=CGRectMake(self.view.width-kBorderMargin-h, kCellHeight/2.0-h/2.0,h, h);
+//    bt_telephone.backgroundColor=[UIColor redColor];
+    [bt_telephone setImage:[UIImage imageNamed:@"ic_action_phone_start"] forState:UIControlStateNormal];
     [bt_telephone addTarget:self action:@selector(bt_telephonePressed:) forControlEvents:UIControlEventTouchUpInside];
     [cell.contentView addSubview:bt_telephone];
+    CGFloat telephoneWidth=100;
+    UILabel *lb_telephone=[[UILabel alloc] initWithFrame:CGRectMake(bt_telephone.left-telephoneWidth, 0,telephoneWidth, cell.contentView.height)];
+    lb_telephone.text=str_telephone;
+//    lb_telephone.backgroundColor=kNavigationBarBg;
+    lb_telephone.font=[UIFont systemFontOfSize:14.0f];
+    [cell.contentView addSubview:lb_telephone];
+    UILabel *lb_plateNumber=[[UILabel alloc] initWithFrame:CGRectMake(kBorderMargin, 0,100, cell.contentView.height)];
+    lb_plateNumber.text=str_plateNumber;
+//    lb_plateNumber.backgroundColor=[UIColor greenColor];
+    lb_plateNumber.font=[UIFont systemFontOfSize:14.0f];
+    [cell.contentView addSubview:lb_plateNumber];
+    UILabel *lb_name=[[UILabel alloc] initWithFrame:CGRectMake(lb_plateNumber.right,lb_plateNumber.top,lb_telephone.left-lb_plateNumber.right,lb_plateNumber.height)];
+//    lb_name.backgroundColor=[UIColor purpleColor];
+    lb_name.text=str_name;
+    lb_name.font=[UIFont systemFontOfSize:14.0f];
+    [cell.contentView addSubview:lb_name];
+    
     
     UIView *line=[[UIView alloc] initWithFrame:CGRectMake(0, kCellHeight-1, cell.width, 1)];
     line.backgroundColor=kWordsDetailColor;
@@ -396,6 +466,10 @@
     if (isOffLine) {
         [self searchWithChineseCharacter:searchText];
     }
+    if (searchText.length==0) {
+        [self.tableData removeAllObjects];
+        [self.tableView reloadData];
+    }
 }
 
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
@@ -438,19 +512,61 @@
 //            NSLog(@"%@", error);
 //        }
 //    }];
+
+    searchText=[Helper filteredString:searchText];
     
-    NSString *str_query=[Helper getSplitString:searchText With:@"*"];
+    if (searchText.length!=0) {
+        progress=[MyProgress showMyProgressToView:self.view animated:YES];
+        [progress setText:@"正在查询"];
+        
+        NSString *str_query=[Helper getSplitString:searchText With:@"*"];
+        
+        AVSearchQuery *searchQuery = [AVSearchQuery searchWithQueryString:str_query];
+        searchQuery.className = @"user";
+        //    searchQuery.highlights = @"field1,field2";
+        searchQuery.limit = 10;
+        searchQuery.cachePolicy = kAVCachePolicyCacheElseNetwork;
+        searchQuery.maxCacheAge = 60;
+        searchQuery.fields = @[@"name", @"plateNumber",@"telephone"];
+        [searchQuery findInBackground:^(NSArray *objects, NSError *error) {
+            if (error==nil) {
+                NSMutableArray *muarr_data=[[NSMutableArray alloc]init];
+                for (AVObject *object in objects) {
+                    NSString *name = [object objectForKey:@"name"];
+                    NSString *plateNumber = [object objectForKey:@"plateNumber"];
+                    NSString *telephone = [object objectForKey:@"telephone"];
+                    NSDictionary *dic_info=@{@"name":name,@"telephone":telephone,@"plateNumber":plateNumber};
+                    [muarr_data addObject:dic_info];
+                }
+                self.tableData=muarr_data;
+                [self.tableView reloadData];
+                [progress hide:YES afterDelay:0];
+                [self addBlankView];
+                //            self.searchBar.text=@"";
+                
+            }
+            else{
+                NSLog(@"%@",error);
+                [progress hide:YES afterDelay:0];
+                [Helper showHintMessage:@"查询失败"];
+            }
+        }];
+    }
+    else{
+        [Helper showHintMessage:@"请输入数据"];
+    }
+}
+
+-(NSMutableArray *)queryOnlineAllData{
+    progress=[MyProgress showMyProgressToView:self.view animated:YES];
+    [progress setText:@"正在更新"];
     
-    AVSearchQuery *searchQuery = [AVSearchQuery searchWithQueryString:str_query];
-    searchQuery.className = @"user";
-//    searchQuery.highlights = @"field1,field2";
-    searchQuery.limit = 10;
-    searchQuery.cachePolicy = kAVCachePolicyCacheElseNetwork;
-    searchQuery.maxCacheAge = 60;
-    searchQuery.fields = @[@"name", @"plateNumber",@"telephone"];
-    [searchQuery findInBackground:^(NSArray *objects, NSError *error) {
+    NSMutableArray *muarr_data=[[NSMutableArray alloc]init];
+    AVQuery *query=[AVQuery queryWithClassName:@"user"];
+//    [query setLimit:10];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (error==nil) {
-            NSMutableArray *muarr_data=[[NSMutableArray alloc]init];
+//            NSLog(@"%@",objects);
             for (AVObject *object in objects) {
                 NSString *name = [object objectForKey:@"name"];
                 NSString *plateNumber = [object objectForKey:@"plateNumber"];
@@ -458,14 +574,20 @@
                 NSDictionary *dic_info=@{@"name":name,@"telephone":telephone,@"plateNumber":plateNumber};
                 [muarr_data addObject:dic_info];
             }
-            self.tableData=muarr_data;
-            [self.tableView reloadData];
-//            self.searchBar.text=@"";
+            if (muarr_data.count>0) {
+                [self updateLocalData:muarr_data];
+                [progress hide:YES afterDelay:0];
+                [Helper showHintMessage:@"更新成功"];
+            }
         }
         else{
             NSLog(@"%@",error);
+            [progress hide:YES afterDelay:0];
+            [Helper showHintMessage:@"更新失败"];
         }
+        
     }];
+    return muarr_data;
 }
 
 @end
