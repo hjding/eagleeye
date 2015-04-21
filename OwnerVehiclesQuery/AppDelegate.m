@@ -10,6 +10,7 @@
 #import "ViewController.h"
 #import "FMDatabase.h"
 #import <AVOSCloud/AVOSCloud.h>
+#import "Reachability.h"
 
 @interface AppDelegate ()
 
@@ -21,10 +22,13 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
-    //如果使用美国站点，请加上这行代码 [AVOSCloud useAVCloudUS];
-    [AVOSCloud setApplicationId:AVOSAppID
-                      clientKey:AVOSAppKey];
-    [AVAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    
+    if ([Helper judgeNetwrok]!=0) {
+        //如果使用美国站点，请加上这行代码 [AVOSCloud useAVCloudUS];
+        [AVOSCloud setApplicationId:AVOSAppID
+                          clientKey:AVOSAppKey];
+        [AVAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
+    }
     
     self.window=[[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor=[UIColor whiteColor];

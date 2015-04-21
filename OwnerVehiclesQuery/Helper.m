@@ -9,6 +9,7 @@
 #import "Helper.h"
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
+#import "Reachability.h"
 
 //#define IOS7_OR_LATER           ( [[[UIDevice currentDevice] systemVersion] compare:@"7.0"] != NSOrderedAscending )
 
@@ -653,6 +654,7 @@
     return tag;
 }
 
+#pragma mark - 字符串操作
 +(NSString *)getSplitString:(NSString *)str With:(NSString *)c{
     if (c==nil) {
         c=@"";
@@ -684,6 +686,28 @@
         }
     }
     return str_result;
+}
+
+#pragma mark - 网络
++(NSInteger)judgeNetwrok{
+    Reachability *r = [Reachability reachabilityWithHostName:@"www.baidu.com"];
+    switch ([r currentReachabilityStatus]) {
+        case NotReachable:
+            // 没有网络连接
+            NSLog(@"没有网络连接");
+            return NotReachable;
+            break;
+        case ReachableViaWWAN:
+            // 使用3G网络
+            NSLog(@"使用3G网络");
+            return ReachableViaWWAN;
+            break;
+        case ReachableViaWiFi:
+            // 使用WiFi网络
+            NSLog(@"使用WiFi网络");
+            return ReachableViaWiFi;
+            break;
+    }
 }
 
 @end

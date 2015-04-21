@@ -15,7 +15,7 @@
 
 #define kFontSize               14.0f
 #define kCellHeight             48.0f
-#define kBorderMargin            8.0f
+#define kBorderMargin           8.0f
 
 @interface ViewController ()<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,PullRefreshTableViewDelegate>
 {
@@ -32,6 +32,7 @@
 //搜索
 @property(nonatomic,retain) UISearchBar     *searchBar;
 @property(nonatomic,retain) NSMutableArray  *searchData;
+
 @property(nonatomic,retain) UIView          *shadowView;
 @property(nonatomic,retain) UILabel         *blankView;
 
@@ -55,19 +56,23 @@
 //    self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight-kTopStatusBarHeight-kNavigationBarHeight)];
     self.view=[[UIView alloc] initWithFrame:CGRectMake(0,0,kDeviceWidth,kDeviceHeight-kTopStatusBarHeight)];
     self.view.backgroundColor=kHomeBg;
-    
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [self judgeNetwrok];
+    if ([Helper judgeNetwrok]==0) {
+        isOffLine=YES;
+    }
+    else{
+        isOffLine=NO;
+    }
     
     [self initUI];
     
     if (isOffLine) {
         [Helper showHintMessage:kOffLineMode];
-        [self initLocalData];
+        self.tableData=[self queryLocalData];
         [self.tableView reloadData];
     }
     else{
@@ -82,28 +87,6 @@
 }
 
 #pragma mark - Privite Method
-
--(void)judgeNetwrok{
-    Reachability *r = [Reachability reachabilityWithHostName:@"www.apple.com"];
-    switch ([r currentReachabilityStatus]) {
-        case NotReachable:
-            // 没有网络连接
-            NSLog(@"没有网络连接");
-            isOffLine=YES;
-            break;
-        case ReachableViaWWAN:
-            // 使用3G网络
-            NSLog(@"使用3G网络");
-            isOffLine=NO;
-            break;
-        case ReachableViaWiFi:
-            // 使用WiFi网络
-            NSLog(@"使用WiFi网络");
-            isOffLine=NO;
-            break;
-            
-    }
-}
 
 -(void)initUI{
 //    UIButton *bt_right=[UIButton buttonWithType:UIButtonTypeCustom];
@@ -139,16 +122,12 @@
     [self.view addSubview:self.shadowView];
     
     self.blankView = [[UILabel alloc] initWithFrame:CGRectMake(0, self.searchBar.bottom, self.view.width, 30)];
-    self.blankView.text = @"未找到相应的车主/车牌";
+    self.blankView.text = @"未查到相应的车主/车牌";
     self.blankView.textColor = kWordsDetailColor;
     self.blankView.textAlignment = NSTextAlignmentCenter;
     self.blankView.font = [UIFont systemFontOfSize:kFontSize];
     self.blankView.alpha=0;
     [self.view addSubview:self.blankView];
-}
-
--(void)initLocalData{
-    self.tableData=[self queryLocalData];
 }
 
 -(void)searchWithChineseCharacter:(NSString *)searchText{
@@ -463,10 +442,20 @@
 {
     //    [self reviseDataWithSearchText:searchText];
     NSLog(@"%@",searchText);
+
     if (isOffLine) {
-        [self searchWithChineseCharacter:searchText];
+        self.tableData=[self queryLocalData];
+        searchText=[Helper filteredString:searchText];
+        if (searchText.length==0) {
+            self.blankView.alpha=0.f;
+            self.shadowView.alpha=1.0f;
+            [self.tableView reloadData];
+        }
+        else{
+            [self searchWithChineseCharacter:searchText];
+        }
     }
-    if (searchText.length==0) {
+    if ((searchText.length==0&&!isOffLine)) {
         [self.tableData removeAllObjects];
         [self.tableView reloadData];
     }

@@ -84,4 +84,7 @@
 #pragma mark - 字符串操作
 +(NSString *)getSplitString:(NSString *)str With:(NSString *)c;     //用c分隔str
 +(NSString *)polishingString:(NSString *)str withChar:(NSString *)c isLeftMode:(BOOL)isLeftMode length:(int)length;//用c补齐str
+
+#pragma mark - 网络
++(int)judgeNetwrok;
 @end
